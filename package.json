@@ -69,7 +69,7 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@jacksonthall22/chess.ts": "^0.1.9",
+		"@jacksonthall22/chess.ts": "^0.1.10",
 		"svelte-chessground": "^2.0.2"
 	}
 }
