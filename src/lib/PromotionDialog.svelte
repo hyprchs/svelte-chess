@@ -1,25 +1,18 @@
 <script lang="ts">
-	import type { Square, Color, PieceSymbol } from '$lib/api.js';
+  import type { Square, Color, PieceType } from '@jacksonthall22/chess.ts';
+  import { WHITE, BLACK, squareFile, squareName, PIECE_TYPES, PIECE_NAMES } from '@jacksonthall22/chess.ts';
 
 	export let square: Square;
-	export let orientation: Color = 'w';
-	export let callback: (promotion: PieceSymbol) => void;
+	export let orientation: Color = WHITE;
+	export let callback: (promotion: PieceType) => void;
 	let className: string | undefined = undefined;
 	export { className as class };
 
-	const marginLeft = 100 / 8 * ( orientation === 'w' ? squareToFileNumber(square) : 7 - squareToFileNumber(square) );
-	const white = square.charAt(1) === '8';
+	const marginLeft = 100 / 8 * ( orientation === WHITE ? squareFile(square) : 7 - squareFile(square) );
+	const white = squareName(square).charAt(1) === '8';
 	const black = ! white;
 
-	const pieces: PieceSymbol[] = ['q','n','r','b'];
-	const pieceNames: { [key in PieceSymbol]: string } = { q: 'queen', n: 'knight', r: 'rook', b: 'bishop', p: 'pawn', k: 'king' };
-		
-
-	function squareToFileNumber( square: Square ): number { // a-h -> 0-7
-		return square.charCodeAt(0) - 97;
-	}
-
-	function keyboardCallback( event: KeyboardEvent, promotion: PieceSymbol ) {
+	function keyboardCallback( event: KeyboardEvent, promotion: PieceType ) {
 		if (event.key === 'Enter' || event.key === ' ') {
 			callback( promotion );
 		}
@@ -28,15 +21,15 @@
 </script>
 
 <div class="dialog {className}">
-	{#each pieces as piece, i}
-		{@const putPiecesFromTop = white && orientation === 'w' || black && orientation === 'b'}
+	{#each PIECE_TYPES as piece, i}
+		{@const putPiecesFromTop = white && orientation === WHITE || black && orientation === BLACK}
 		{@const marginTop = putPiecesFromTop ? i * 12.5 : 100 - 12.5*(i+1)}
 		<div class="square" style="margin-left:{marginLeft}%;margin-top:{marginTop}%;">
 			<div
 				class="piece {piece}" class:white class:black
 				on:click={()=>callback(piece)}
 				on:keydown={(e)=>keyboardCallback(e,piece)}
-				role="button" tabindex="0" aria-label="Promote to {pieceNames[piece]}"
+				role="button" tabindex="0" aria-label="Promote to {PIECE_NAMES[piece]}"
 			></div>
 		</div>
 	{/each}

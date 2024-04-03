@@ -3,7 +3,8 @@
 //   skill level
 //   setMoveTime, setDepth, setSkill
 //   expose a bindable engine-is-searching boolean from the Chess component? or from this class?
-import type { Color } from '$lib/api.js';
+import { BLACK } from '@jacksonthall22/chess.ts';
+import type { Color } from '@jacksonthall22/chess.ts';
 
 export interface EngineOptions {
 	//skill?: number, // 1-20
@@ -11,14 +12,14 @@ export interface EngineOptions {
 	depth?: number, // Maximum depth to search per move
 	color?: Color | 'both' | 'none',
 	stockfishPath?: string,
-};
+}
 
 enum State {
 	Uninitialised = 'uninitialised',
 	Initialising = 'initialising',
 	Waiting = 'waiting',
 	Searching = 'searching', // searching for the best move
-};
+}
 
 export class Engine {
 	private stockfish: Worker | undefined;
@@ -35,7 +36,7 @@ export class Engine {
 	constructor( options: EngineOptions = {} ) {
 		this.moveTime = options.moveTime || 2000;
 		this.depth = options.depth || 40;
-		this.color = options.color || 'b';
+		this.color = options.color || BLACK;
 		this.stockfishPath = options.stockfishPath || 'stockfish.js';
 	}
 
@@ -86,10 +87,10 @@ export class Engine {
 			this.stockfish.postMessage(`go depth ${this.depth} movetime ${this.moveTime}`);
 			this.onBestMove = ( uci: string ) => {
 				const uciArray = uci.split(' ');
-				const bestMoveLan = uciArray[1];
+				const bestMoveUci = uciArray[1];
 				this.state = State.Waiting;
 				this.onBestMove = undefined;
-				resolve( bestMoveLan );
+				resolve( bestMoveUci );
 			};
 		});
 	}

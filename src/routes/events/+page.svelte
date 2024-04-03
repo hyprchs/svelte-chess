@@ -6,14 +6,14 @@
 	let messages: {title:string, details:string}[] = [];
 	function moveHandler( event: MoveEvent ) {
 		messages.unshift( {
-			title: "MoveEvent: " + event.detail.san,
+			title: "MoveEvent: " + event.detail.uci(),
 			details: JSON.stringify(event.detail, null, 2)
 		} );
 		messages = messages;
 	}
 	function gameOverHandler( event: GameOverEvent ) {
 		messages.unshift( {
-			title: "GameOverEvent: " + event.detail.reason,
+			title: "GameOverEvent: " + event.detail.result(),
 			details: JSON.stringify(event.detail, null, 2)
 		} );
 		messages = messages;

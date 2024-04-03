@@ -10,13 +10,16 @@
 		'5K2/k7/4P1p1/8/8/8/4b3/8 w - - 0 1',
 		'7k/5K2/7P/6pP/8/8/8/8 w - - 0 1'
 	];
+
+  let animationEnabled = true;
 </script>
 
 <div style="max-width:512px;margin:0 auto;">
-	<Chess bind:this={chess}/>
+  <Chess bind:this={chess}/>
 	{#each fens as fen, i}
-		<button on:click={()=>{chess.load(fen)}}>{i}</button>
+		<button on:click={()=>{chess.setFen(fen, { animationEnabled: animationEnabled })}}>{i}</button>
 	{/each}
+  <input type="checkbox" bind:checked={animationEnabled} /> Animation Enabled
 </div>
 
 

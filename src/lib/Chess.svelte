@@ -1,19 +1,19 @@
 <script lang="ts" context="module">
-	export type GameOverEvent = CustomEvent<GameOver>;
+	export type GameOverEvent = CustomEvent<Outcome>;
 	export type MoveEvent = CustomEvent<Move>;
 	export type UciEvent = CustomEvent<string>;
-	export type { Square, Color, PieceSymbol, Move, GameOver };
 	export { Engine } from '$lib/engine.js';
 </script>
 <script lang="ts">
+  import { Board, Move, Outcome, WHITE, PieceType, Square, type Color } from '@jacksonthall22/chess.ts';
 	import { Chessground } from 'svelte-chessground';
 	import PromotionDialog from '$lib/PromotionDialog.svelte';
-	import { Api, type Square, type Color, type PieceSymbol, type Move, type GameOver } from '$lib/api.js';
+  import { Api } from '$lib/api.js';
 	import type { Engine } from '$lib/engine.js';
 
 	import { onMount, createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher<{ move: Move, gameOver: GameOver, ready: {}, uci: string }>();
+	const dispatch = createEventDispatcher<{ move: Move, gameOver: Outcome, ready: {}, uci: string }>();
 
 	let chessground: Chessground;
 	let container: HTMLElement;
@@ -23,15 +23,10 @@
 	 */
 
 	// bindable read-only props
-	export let moveNumber = 0;
-	export let turn: Color = 'w';
-	export let inCheck = false;
-	export let history: string[] = [];
-	export let isGameOver = false;
+  export let board: Board = new Board();
 
 	// Initial values used, also bindable
-	export let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-	export let orientation: Color = 'w';
+	export let orientation: Color = WHITE;
 
 	// non-bindable
 	export let engine: Engine | undefined = undefined;
@@ -44,34 +39,33 @@
 	/*
 	 * Methods -- passed to API
 	 */
-
-	export function load(newFen: string) {
+	export function setFen(newFen: string, { animationEnabled } = { animationEnabled: true }) {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		api.load( newFen );
+		api.setFen(newFen, { animationEnabled });
 	}
-	export function move(moveSan: string) {
+	export function pushSan(san: string) {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		api.move(moveSan);
+		api.pushSan(san);
 	}
-	export function getHistory(): string[]
-	export function getHistory({ verbose }: { verbose: true }): Move[]
-	export function getHistory({ verbose }: { verbose: false }): string[]
-	export function getHistory({ verbose }: { verbose: boolean }): string[] | Move[]
-	export function getHistory({ verbose = false }: { verbose?: boolean } = {}) {
+  export function pushUci(uci: string) {
+    if ( ! api ) throw new Error( 'component not mounted yet' );
+    api.pushUci(uci);
+  }
+  export function push(move: Move) {
+    if ( ! api ) throw new Error( 'component not mounted yet' );
+    api.push(move);
+  }
+  export function getBoard() {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		return api.history({verbose});
-	}
-	export function getBoard() {
-		if ( ! api ) throw new Error( 'component not mounted yet' );
-		return api.board();
+		return api.board;
 	}
 	export function undo(): Move | null {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
 		return api.undo();
 	}
-	export function reset(): void {
+	export function reset({ animationEnabled } = { animationEnabled: true }): void {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		api.reset();
+		api.reset({ animationEnabled });
 	}
 	export function toggleOrientation(): void {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
@@ -87,23 +81,18 @@
 	 */
 
 	function stateChangeCallback(api: Api) {
-		fen = api.fen();
 		orientation = api.orientation();
-		moveNumber = api.moveNumber();
-		turn = api.turn();
-		inCheck = api.inCheck();
-		history = api.history();
-		isGameOver = api.isGameOver();
+		board = api.board;
 	}
 
-	function promotionCallback( square: Square ): Promise<PieceSymbol> {
+	function promotionCallback( square: Square ): Promise<PieceType> {
 		return new Promise((resolve) => {
 			const element = new PromotionDialog({
 				target: container,
 				props: { 
 					square,
 					orientation,
-					callback: (piece: PieceSymbol) => {
+					callback: (piece: PieceType) => {
 						element.$destroy();
 						resolve( piece );
 					}
@@ -115,15 +104,15 @@
 	function moveCallback( move: Move ) {
 		dispatch( 'move', move );
 	}
-	function gameOverCallback( gameOver: GameOver ) {
-		dispatch( 'gameOver', gameOver );
+	function gameOverCallback( outcome: Outcome ) {
+		dispatch( 'gameOver', outcome );
 	}
 
 	onMount( async () => {
 		if ( engine ) {
 			engine.setUciCallback( (message) => dispatch( 'uci', message ) );
 		}
-		api = new Api( chessground, fen, stateChangeCallback, promotionCallback, moveCallback, gameOverCallback, orientation, engine );
+		api = new Api( chessground, board, stateChangeCallback, promotionCallback, moveCallback, gameOverCallback, orientation, engine );
 		api.init().then( () => {
 			// Dispatch ready-event: Simply letting the parent observe when the component is mounted is not enough due to async onMount.
 			dispatch( 'ready' ); 

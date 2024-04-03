@@ -1,20 +1,28 @@
 <script lang="ts">
-	import Chess, { type Color } from '$lib/Chess.svelte';
-	let fen:string, moveNumber:number, turn:Color, history:string[], inCheck:boolean;
+	import Chess from '$lib/Chess.svelte';
+  import { Board, WHITE } from "@jacksonthall22/chess.ts"
+	let board: Board = new Board();
+
+  let sanHistory: string[] = []
+  $: {
+    board = board
+    const tempBoard = new Board()
+    sanHistory = board.moveStack.map(move => tempBoard.sanAndPush(move))
+  }
 </script>
 
 <div style="max-width:512px;margin:0 auto;">
-	<Chess bind:fen bind:moveNumber bind:turn bind:history bind:inCheck />
+	<Chess bind:board />
 </div>
 
-{#if inCheck}
+{#if board.isCheck()}
 	<p>Check!</p>
 {/if}
-<p>Move {moveNumber}, {turn == 'w' ? 'White' : 'Black'} to move.</p>
-{#if history?.length > 0}
-	<p>Moves: {history.join(' ')}</p>
+<p>Ply {board.ply()}, {board.turn === WHITE ? 'White' : 'Black'} to move.</p>
+{#if sanHistory.length > 0}
+	<p>Moves: {sanHistory.join(', ')}</p>
 {/if}
-<p style="white-space:nowrap;">FEN: {fen}</p>
+<p style="white-space:nowrap;">FEN: {board.fen()}</p>
 
 <style>
 	div, p {

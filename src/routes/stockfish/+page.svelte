@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Chess, { Engine, type UciEvent } from '$lib/Chess.svelte';
+  import { WHITE, BLACK } from "@jacksonthall22/chess.ts"
 	let chess: Chess;
 
 	// Note: stockfish.js must be manually downloaded (see Readme)
 	const engine = new Engine({
 		depth: 20,
 		moveTime: 500,
-		color: 'w'
+		color: WHITE
 	});
 
 	// Output all UCI messages
@@ -21,7 +22,7 @@
 
 <div class="container">
 	<div class="board">
-		<Chess bind:this={chess} orientation="b" on:uci={handleUci} {engine} />
+		<Chess bind:this={chess} orientation={BLACK} on:uci={handleUci} {engine} />
 		<button on:click={()=>chess?.playEngineMove()}>Play engine move</button>
 	</div>
 	<div class="uci">

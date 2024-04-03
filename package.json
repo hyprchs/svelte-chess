@@ -68,6 +68,7 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
+		"@jacksonthall22/chess.ts": "^0.1.8",
 		"chess.js": "^1.0.0-beta.6",
 		"svelte-chessground": "^2.0.2"
 	}

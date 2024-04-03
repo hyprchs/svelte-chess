@@ -1,69 +1,58 @@
 import type { Chessground } from 'svelte-chessground';
-import { Chess as ChessJS, SQUARES } from 'chess.js';
-import type { Square, PieceSymbol, Color, Move as CjsMove } from 'chess.js';
-export type { Square, PieceSymbol, Color };
+import chess from '@jacksonthall22/chess.ts'
 import type { Engine } from '$lib/engine.js';
 
-export type Move = CjsMove & {
-	check: boolean,
-	checkmate: boolean,
-};
-
-export type GameOver = {
-	reason: "checkmate" | "stalemate" | "repetition" | "insufficient material" | "fifty-move rule",
-	result: 1 | 0 | 0.5,
-};
 
 export class Api {
-	private chessJS: ChessJS;
+  board: chess.Board;
 	private gameIsOver = false;
 	private initialised = false;
 	constructor(
 		private cg: Chessground,
-		fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-		private stateChangeCallback: (api:Api) => void = (api)=>{}, // called when the game state (not visuals) changes
-		private promotionCallback: (sq:Square) => Promise<PieceSymbol> = async (sq)=>'q', // called before promotion
-		private moveCallback: (move:Move) => void = (m)=>{}, // called after move
-		private gameOverCallback: ( gameOver:GameOver ) => void = (go)=>{}, // called after game-ending move
-		private _orientation: Color = 'w',
+		board: chess.Board,
+		private stateChangeCallback: (api: Api) => void = (api)=>{}, // called when the game state (not visuals) changes
+		private promotionCallback: (sq: chess.Square) => Promise<chess.PieceType> = async (sq)=>chess.QUEEN, // called before promotion
+		private moveCallback: (move: chess.Move) => void = (m)=>{}, // called after move
+		private gameOverCallback: (outcome: chess.Outcome) => void = (go)=>{}, // called after game-ending move
+		private _orientation: chess.Color = chess.WHITE,
 		private engine: Engine | undefined = undefined,
 	) {
 		this.cg.set( {
-			fen,
+			fen: board.fen(),
 			orientation: Api._colorToCgColor( _orientation ),
 			movable: { free: false },
 			premovable: { enabled: false },
 		} );
-		this.chessJS = new ChessJS( fen );
+		this.board = board;
 	}
 
 	async init() {
 		if ( this.engine ) {
 			await this.engine.init();
-			this.load( this.chessJS.fen() );
+			this.setFen( this.board.fen() );
 			if ( this._enginePlaysNextMove() ) {
 				this.playEngineMove();
 			}
 		} else {
-			this.load( this.chessJS.fen() );
+			this.setFen( this.board.fen() );
 		}
 		this.initialised = true;
 	}
 
 	// Load FEN. Throws exception on invalid FEN.
-	load( fen: string ) {
+	setFen( fen: string, { animationEnabled } = { animationEnabled: true} ) {
 		let engineStopSearchPromise;
 		if ( this.initialised && this.engine?.isSearching() )
 			engineStopSearchPromise = this.engine.stopSearch();
-		this.chessJS.load( fen );
+		this.board.setFen( fen );
 		this._checkForGameOver();
-		this.cg.set( { animation: { enabled: false } } );
-		const cgColor = Api._colorToCgColor( this.chessJS.turn() );
+		this.cg.set( { animation: { enabled: animationEnabled } } );
+		const cgColor = Api._colorToCgColor( this.board.turn );
 		const enginePlaysNextMove = this._enginePlaysNextMove();
 		this.cg.set( {
 			fen: fen,
 			turnColor: cgColor,
-			check: this.chessJS.inCheck(),
+			check: this.board.isCheck(),
 			lastMove: undefined,
 			selected: undefined,
 			movable: {
@@ -71,7 +60,7 @@ export class Api {
 				color: cgColor,
 				dests: enginePlaysNextMove ? new Map() : this.possibleMovesDests(),
 				events: {
-					after: (orig, dest) => { this._chessgroundMoveCallback(orig,dest) },
+					after: (orig: string, dest: string) => { this._chessgroundMoveCallback(orig,dest) },
 				},
 			},
 		} );
@@ -94,67 +83,74 @@ export class Api {
 	 */
 
 	// called after a move is played on Chessground
-	async _chessgroundMoveCallback( orig: Square|'a0', dest: Square|'a0' ) {
+	async _chessgroundMoveCallback(
+      orig: string,
+      dest: string
+    ) {
 		if ( orig === 'a0' || dest === 'a0' ) {
 			// the Chessground square type (Key) includes a0
 			throw Error('invalid square');
 		}
+
+    const fromSquare = chess.parseSquare(orig)
+    const toSquare = chess.parseSquare(dest)
+    
 		if ( this.engine && this.engine.isSearching() )
 			this.engine.stopSearch();
-		let cjsMove: CjsMove;
-		if ( this._moveIsPromotion( orig, dest ) ) {
-			const promotion = await this.promotionCallback( dest );
-			cjsMove = this.chessJS.move({ from: orig, to: dest, promotion });
-		} else {
-			cjsMove = this.chessJS.move({ from: orig, to: dest });
-		}
-		const move = Api._cjsMoveToMove( cjsMove );
-		this._postMoveAdmin( move );
+		
+    const move = new chess.Move(fromSquare, toSquare)
+    if (this._moveIsPromotion(move)) {
+      move.promotion = await this.promotionCallback(toSquare);
+    }
+    this.board.push(move)
+
+    this._postMoveAdmin( move );
 	}
 
-	private _moveIsPromotion( orig: Square, dest: Square ): boolean {
-		return this.chessJS.get(orig).type === 'p' && ( dest.charAt(1) == '1' || dest.charAt(1) == '8' );
+	private _moveIsPromotion( move: chess.Move ): boolean {
+		return !!(chess.BB_SQUARES[move.toSquare] & chess.BB_BACKRANKS) && this.board.pieceTypeAt(move.fromSquare) === chess.PAWN;
 	}
 
 	// Make a move programmatically
 	// argument is either a short algebraic notation (SAN) string
 	// or an object with from/to/promotion (see chess.js move())
-	move( moveSanOrObj: string | { from: string, to: string, promotion?: string } ) {
+	push( move: chess.Move ) {
 		if ( ! this.initialised )
 			throw new Error('Called move before initialisation finished.');
 		if ( this.gameIsOver )
 			throw new Error('Invalid move: Game is over.');
 		if ( this.engine && this.engine.isSearching() )
 			this.engine.stopSearch();
-		const cjsMove = this.chessJS.move( moveSanOrObj ); // throws on illegal move
-		const move = Api._cjsMoveToMove( cjsMove );
-		this.cg.move( move.from, move.to );
-		this.cg.set({ turnColor: Api._colorToCgColor( this.chessJS.turn() ) });
+		this.board.push( move ); // throws on illegal move
+		this.cg.move(chess.squareName(move.fromSquare), chess.squareName(move.toSquare));
+    this.cg.set({ turnColor: Api._colorToCgColor( this.board.turn ) });
 		this._postMoveAdmin( move );
 	}
-	// Make a move programmatically from long algebraic notation (LAN) string,
+	// Make a move programmatically from a UCI notation (LAN) string,
 	// as returned by UCI engines.
-	moveLan( moveLan: string ) {
-		const from = moveLan.slice(0,2);
-		const to = moveLan.slice(2,4);
-		const promotion = moveLan.charAt(4) || undefined;
-		this.move( { from, to, promotion } );
+	pushUci( uci: string ) {
+		const move = chess.Move.fromUci(uci);
+		this.push(move);
 	}
+
+  pushSan( san: string ) {
+    const move = this.board.parseSan(san)
+    this.push(move)
+  }
 
 	// Called after a move (chess.js or chessground) to:
 	// - update chess-logic details Chessground doesn't handle
 	// - dispatch events
 	// - play engine move 
-	private _postMoveAdmin( move: Move ) {
-
+	private _postMoveAdmin( move: chess.Move ) {
 		const enginePlaysNextMove = this._enginePlaysNextMove();
 
 		// reload FEN after en-passant or promotion. TODO make promotion smoother
-		if ( move.flags.includes('e') || move.flags.includes('p') ) {
-			this.cg.set({ fen: this.chessJS.fen() });
+		if ( this.board.isEnPassant(move) || move.promotion !== null ) {
+			this.cg.set({ fen: this.board.fen() });
 		}
 		// highlight king if in check
-		if ( move.check ) {
+		if ( this.board.isCheck() ) {
 			this.cg.set({ check: true });
 		}
 		// dispatch move event
@@ -174,84 +170,63 @@ export class Api {
 		if ( ! this.gameIsOver && enginePlaysNextMove ) {
 			this.playEngineMove();
 		}
-
 	}
 
 	async playEngineMove() {
 		if ( ! this.engine )
 			throw new Error('playEngineMove called without initialised engine');
-		return this.engine.getMove( this.chessJS.fen() ).then( (lan) => {
-			this.moveLan(lan);
+		return this.engine.getMove( this.board.fen() ).then( (uci) => {
+			this.pushUci(uci);
 		});
 	}
 
 	private _enginePlaysNextMove() {
-		return this.engine && ( this.engine.getColor() === 'both' || this.engine.getColor() === this.chessJS.turn() );
+		return this.engine && ( this.engine.getColor() === 'both' || this.engine.getColor() === this.board.turn );
 	}
 
 	private _updateChessgroundWithPossibleMoves() {
-		const cgColor = Api._colorToCgColor( this.chessJS.turn() );
+		const cgColor = Api._colorToCgColor( this.board.turn );
 		this.cg.set({
-			turnColor: cgColor,
-			movable: {
-				color: cgColor,
-				dests: this.possibleMovesDests(),
-			},
-		});
+      turnColor: cgColor,
+      movable: {
+        color: cgColor,
+        dests: this.possibleMovesDests(),
+      },
+    });
 	}
 	private _checkForGameOver() {
-		if ( this.chessJS.isCheckmate() ) {
-			const result = this.chessJS.turn() == 'w' ? 0 : 1;
-			this.gameOverCallback( { reason: 'checkmate', result } );
-			this.gameIsOver = true;
-		} else if ( this.chessJS.isStalemate() ) {
-			this.gameOverCallback( { reason: 'stalemate', result: 0.5 } );
-			this.gameIsOver = true;
-		} else if ( this.chessJS.isInsufficientMaterial() ) {
-			this.gameOverCallback( { reason: 'insufficient material', result: 0.5 } );
-			this.gameIsOver = true;
-		} else if ( this.chessJS.isThreefoldRepetition() ) {
-			this.gameOverCallback( { reason: 'repetition', result: 0.5 } );
-			this.gameIsOver = true;
-		} else if ( this.chessJS.isDraw() ) {
-			// use isDraw until chess.js exposes isFiftyMoveDraw()
-			this.gameOverCallback( { reason: 'fifty-move rule', result: 0.5 } );
-			this.gameIsOver = true;
-		} else {
-			this.gameIsOver = false;
-		}
+    this.gameIsOver = this.board.isGameOver()
+    
+    if ( this.gameIsOver ) {
+      this.gameOverCallback( this.board.outcome() as chess.Outcome )
+    }
 	}
 
-
-	/*
-	 *
-	 */
 
 	// Find all legal moves in chessground "dests" format
 	possibleMovesDests() {
-		const dests = new Map();
+		const dests = new Map<string, string[]>();
 		if ( ! this.gameIsOver ) {
-			SQUARES.forEach(s => {
-				const ms = this.chessJS.moves({square: s, verbose: true});
-				if (ms.length) dests.set(s, ms.map(m => m.to));
+			chess.SQUARES.forEach(s => {
+				const moves = Array.from(this.board.generateLegalMoves(chess.BB_SQUARES[s]));
+				if (moves.length) dests.set(chess.squareName(s), moves.map(m => chess.squareName(m.toSquare)));
 			});
 		}
 		return dests;
 	}
 
 	// Reset board to the starting position
-	reset(): void {
-		this.load( 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' );
+	reset({ animationEnabled } = { animationEnabled: true }): void {
+		this.setFen(chess.STARTING_FEN, { animationEnabled });
 	}
 
 	// Undo last move
-	undo(): Move | null {
-		const cjsMove = this.chessJS.undo();
-		const move = cjsMove ? Api._cjsMoveToMove( cjsMove ) : null;
-		const turnColor = Api._colorToCgColor( this.chessJS.turn() );
+	undo(): chess.Move | null {
+		const move = this.board.pop();
+		const turnColor = Api._colorToCgColor( this.board.turn );
 		this.cg.set({
-			fen: this.chessJS.fen(),
-			check: this.chessJS.inCheck() ? turnColor : undefined,
+			fen: this.board.fen(),
+			check: this.board.isCheck() ? turnColor : undefined,
 			turnColor: turnColor,
 			lastMove: undefined,
 		});
@@ -263,69 +238,23 @@ export class Api {
 
 	// Board orientation
 	toggleOrientation(): void {
-		this._orientation = this._orientation === 'w' ? 'b' : 'w';
+		this._orientation = this._orientation === chess.WHITE ? chess.BLACK : chess.WHITE;
 		this.cg.set({
 			orientation: Api._colorToCgColor( this._orientation ),
 		});
 		this.stateChangeCallback(this);
 	}
-	orientation(): Color {
+	orientation(): chess.Color {
 		return this._orientation;
 	}
 
-	// Check if game is over (checkmate, stalemate, repetition, insufficient material, fifty-move rule)
-	isGameOver(): boolean {
-		return this.gameIsOver;
-	}
-
-
-	/*
-	 * Methods passed through to chess.js
-	 */
-	
-	fen(): string {
-		return this.chessJS.fen();
-	}
-	turn() {
-		return this.chessJS.turn();
-	}
-	moveNumber() {
-		return this.chessJS.moveNumber();
-	}
-	inCheck() {
-		return this.chessJS.inCheck();
-	}
-	history(): string[]
-	history({ verbose }: { verbose: true }): Move[]
-	history({ verbose }: { verbose: false }): string[]
-	history({ verbose }: { verbose: boolean }): string[] | Move[]
-	history({ verbose = false }: { verbose?: boolean } = {}) {
-		if ( verbose ) {
-			return this.chessJS.history({ verbose }).map( Api._cjsMoveToMove );
-		} else {
-			return this.chessJS.history({ verbose });
-		}
-	}
-	board() {
-		return this.chessJS.board();
-	}
-
-	// Convert between chess.js color (w/b) and chessground color (white/black).
+	// Convert between chess.ts color (true/false) and chessground color ('white' / 'black').
 	// Chess.js color is always used internally.
-	static _colorToCgColor( chessjsColor: Color ): 'white' | 'black' {
-		return chessjsColor === 'w' ? 'white' : 'black';
+	static _colorToCgColor( chessjsColor: chess.Color ): 'white' | 'black' {
+		return chessjsColor === chess.WHITE ? 'white' : 'black';
 	}
-	static _cgColorToColor( chessgroundColor: 'white' | 'black' ): Color {
-		return chessgroundColor === 'white' ? 'w' : 'b';
-	}
-
-	// Convert chess.js move (CjsMove) to svelte-chess Move.
-	// Only difference is check:boolean and checkmate:boolean in the latter.
-	static _cjsMoveToMove( cjsMove: CjsMove ): Move {
-		const lastSanChar = cjsMove.san.slice(-1);
-		const checkmate = lastSanChar === '#';
-		const check     = lastSanChar === '+' || checkmate;
-		return { ...cjsMove, check, checkmate };
+	static _cgColorToColor( chessgroundColor: 'white' | 'black' ): chess.Color {
+		return chessgroundColor === 'white' ? chess.WHITE : chess.BLACK;
 	}
 
 }
