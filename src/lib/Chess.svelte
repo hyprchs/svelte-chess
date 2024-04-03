@@ -22,17 +22,15 @@
 	 * Props
 	 */
 
-	// bindable read-only props
+  // Bindable
   export let board: Board = new Board();
   $: {
     if (api) setBoard(board)
   }
-
-	// Initial values used, also bindable
 	export let orientation: Color = WHITE;
   export let animationEnabled: boolean = true;
 
-	// non-bindable
+	// Non-bindable
 	export let engine: Engine | undefined = undefined;
 	let className: string | undefined = undefined;
 	export { className as class };
