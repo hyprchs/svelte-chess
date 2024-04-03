@@ -10,10 +10,10 @@ export class Api {
 	constructor(
 		private cg: Chessground,
 		board: chess.Board,
-		private stateChangeCallback: (api: Api) => void = (api)=>{}, // called when the game state (not visuals) changes
+		private stateChangeCallback: (api: Api) => void = (api)=>{/*noop*/}, // called when the game state (not visuals) changes
 		private promotionCallback: (sq: chess.Square) => Promise<chess.PieceType> = async (sq)=>chess.QUEEN, // called before promotion
-		private moveCallback: (move: chess.Move) => void = (m)=>{}, // called after move
-		private gameOverCallback: (outcome: chess.Outcome) => void = (go)=>{}, // called after game-ending move
+		private moveCallback: (move: chess.Move) => void = (m)=>{/*noop*/}, // called after move
+		private gameOverCallback: (outcome: chess.Outcome) => void = (go)=>{/*noop*/}, // called after game-ending move
 		private _orientation: chess.Color = chess.WHITE,
 		private engine: Engine | undefined = undefined,
 	) {
