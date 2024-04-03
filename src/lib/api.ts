@@ -39,43 +39,49 @@ export class Api {
 		this.initialised = true;
 	}
 
+  setBoard( board: chess.Board, animate = true ) {
+    let engineStopSearchPromise;
+    if (this.initialised && this.engine?.isSearching() )
+      engineStopSearchPromise = this.engine.stopSearch();
+    this.board = board;
+    this._checkForGameOver();
+    this.cg.set({ animation: { enabled: animate } });
+    const cgColor = Api._colorToCgColor(this.board.turn);
+    const enginePlaysNextMove = this._enginePlaysNextMove();
+    this.cg.set({
+      fen: board.fen(),
+      turnColor: cgColor,
+      check: this.board.isCheck(),
+      lastMove: undefined,
+      selected: undefined,
+      movable: {
+        free: false,
+        color: cgColor,
+        dests: enginePlaysNextMove ? new Map() : this.possibleMovesDests(),
+        events: {
+          after: (orig: string, dest: string) => {
+            this._chessgroundMoveCallback(orig, dest);
+          },
+        },
+      },
+    });
+
+    if (this.initialised && enginePlaysNextMove) {
+      // Play immediate engine move, but wait until stopSearch has finished
+      if (engineStopSearchPromise) {
+        engineStopSearchPromise.then(() => {
+          this.playEngineMove();
+        });
+      } else {
+        this.playEngineMove();
+      }
+    }
+    this.stateChangeCallback(this);
+  }
+
 	// Load FEN. Throws exception on invalid FEN.
-	setFen( fen: string, { animationEnabled } = { animationEnabled: true} ) {
-		let engineStopSearchPromise;
-		if ( this.initialised && this.engine?.isSearching() )
-			engineStopSearchPromise = this.engine.stopSearch();
-		this.board.setFen( fen );
-		this._checkForGameOver();
-		this.cg.set( { animation: { enabled: animationEnabled } } );
-		const cgColor = Api._colorToCgColor( this.board.turn );
-		const enginePlaysNextMove = this._enginePlaysNextMove();
-		this.cg.set( {
-			fen: fen,
-			turnColor: cgColor,
-			check: this.board.isCheck(),
-			lastMove: undefined,
-			selected: undefined,
-			movable: {
-				free: false,
-				color: cgColor,
-				dests: enginePlaysNextMove ? new Map() : this.possibleMovesDests(),
-				events: {
-					after: (orig: string, dest: string) => { this._chessgroundMoveCallback(orig,dest) },
-				},
-			},
-		} );
-		this.cg.set( { animation: { enabled: true } } );
-		if ( this.initialised && enginePlaysNextMove ) {
-			// Play immediate engine move, but wait until stopSearch has finished
-			if ( engineStopSearchPromise ) {
-				engineStopSearchPromise.then( () => {
-					this.playEngineMove();
-				});
-			} else {
-				this.playEngineMove();
-			}
-		}
-		this.stateChangeCallback(this);
+	setFen( fen: string, animate = true ) {
+    this.setBoard(new chess.Board(fen), animate);
 	}
 
 	/*
@@ -216,8 +222,8 @@ export class Api {
 	}
 
 	// Reset board to the starting position
-	reset({ animationEnabled } = { animationEnabled: true }): void {
-		this.setFen(chess.STARTING_FEN, { animationEnabled });
+	reset(animate = true): void {
+		this.setFen(chess.STARTING_FEN, animate);
 	}
 
 	// Undo last move

@@ -24,9 +24,13 @@
 
 	// bindable read-only props
   export let board: Board = new Board();
+  $: {
+    if (api) setBoard(board)
+  }
 
 	// Initial values used, also bindable
 	export let orientation: Color = WHITE;
+  export let animationEnabled: boolean = true;
 
 	// non-bindable
 	export let engine: Engine | undefined = undefined;
@@ -39,9 +43,14 @@
 	/*
 	 * Methods -- passed to API
 	 */
-	export function setFen(newFen: string, { animationEnabled } = { animationEnabled: true }) {
+
+  export function setBoard(newBoard: Board, animate = animationEnabled) {
+    if ( ! api ) throw new Error( 'component not mounted yet' );
+    api.setBoard(newBoard, animate);
+  }
+	export function setFen(newFen: string, animate = animationEnabled ) {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		api.setFen(newFen, { animationEnabled });
+		api.setFen(newFen, animate);
 	}
 	export function pushSan(san: string) {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
@@ -63,9 +72,9 @@
 		if ( ! api ) throw new Error( 'component not mounted yet' );
 		return api.undo();
 	}
-	export function reset({ animationEnabled } = { animationEnabled: true }): void {
+	export function reset(animate = animationEnabled): void {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		api.reset({ animationEnabled });
+		api.reset(animate);
 	}
 	export function toggleOrientation(): void {
 		if ( ! api ) throw new Error( 'component not mounted yet' );

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Chess from '$lib/Chess.svelte';
+  import type { Board } from '@jacksonthall22/chess.ts'
 	let chess: Chess;
 
 	const fens = [
@@ -12,12 +13,18 @@
 	];
 
   let animationEnabled = true;
+  let board: Board;
 </script>
 
 <div style="max-width:512px;margin:0 auto;">
-  <Chess bind:this={chess}/>
+  <Chess bind:this={chess} bind:board bind:animationEnabled />
 	{#each fens as fen, i}
-		<button on:click={()=>{chess.setFen(fen, { animationEnabled: animationEnabled })}}>{i}</button>
+		<button on:click={() => {
+      board.setFen(fen);
+      board = board  // Necessary to force reactivity
+      
+      // chess.setFen(fen);  // Alternative
+    }}>{i}</button>
 	{/each}
   <input type="checkbox" bind:checked={animationEnabled} /> Animation Enabled
 </div>
