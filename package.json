@@ -1,11 +1,12 @@
 {
-	"name": "svelte-chess",
-	"description": "Fully playable chess component for Svelte. Powered by Chess.js logic, Chessground chessboard and optionally Stockfish chess AI.",
+	"name": "@jacksonthall22/svelte-chess",
+	"description": "Fully playable chess component for Svelte. Powered by @jacksonthall22/chess.ts logic, Chessground chessboard and optionally Stockfish chess AI.",
 	"keywords": [
 		"chess",
 		"svelte",
 		"chessground",
 		"chess.js",
+		"chess.ts",
 		"stockfish",
 		"chess-engine",
 		"chessboard",
@@ -13,7 +14,7 @@
 		"ui",
 		"typescript"
 	],
-	"version": "0.11.1",
+	"version": "0.0.2",
 	"license": "GPL-3.0",
 	"homepage": "https://github.com/gtim/svelte-chess#readme",
 	"bugs": "https://github.com/gtim/svelte-chess/issues",
@@ -68,8 +69,7 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@jacksonthall22/chess.ts": "^0.1.8",
-		"chess.js": "^1.0.0-beta.6",
+		"@jacksonthall22/chess.ts": "^0.1.9",
 		"svelte-chessground": "^2.0.2"
 	}
 }
