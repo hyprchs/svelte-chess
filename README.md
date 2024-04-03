@@ -11,11 +11,11 @@ and optionally [Stockfish](https://github.com/official-stockfish/Stockfish) ches
 ## Features
 
 * Track game state via props or detailed events
+* Bind to a [`chess.ts`](https://www.npmjs.com/package/@jacksonthall22/chess.ts) `Board` object
 * Play against Stockfish
 * Undo moves
 * Pawn promotion dialog
 * Fully restylable
-* Move history
 * Typed
 
 ## Usage 
