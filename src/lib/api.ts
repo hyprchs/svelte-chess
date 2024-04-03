@@ -236,7 +236,7 @@ export class Api {
 			turnColor: turnColor,
 			lastMove: undefined,
 		});
-		this.gameIsOver = false;
+		this.gameIsOver = this.board.isGameOver();  // Don't set to false blindly - FEN could be mate, but no move stack
 		this._updateChessgroundWithPossibleMoves();
 		this.stateChangeCallback(this);
 		return move;
