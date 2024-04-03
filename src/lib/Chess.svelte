@@ -68,9 +68,9 @@
 		if ( ! api ) throw new Error( 'component not mounted yet' );
 		return api.board;
 	}
-	export function undo(): Move | null {
+	export function pop(): Move | null {
 		if ( ! api ) throw new Error( 'component not mounted yet' );
-		return api.undo();
+		return api.pop();
 	}
 	export function reset(animate = animationEnabled): void {
 		if ( ! api ) throw new Error( 'component not mounted yet' );

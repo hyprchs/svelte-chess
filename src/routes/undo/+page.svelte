@@ -6,7 +6,7 @@
 <div style="max-width:512px;margin:0 auto;">
 	<Chess bind:this={chess} />
 	<button on:click={()=>chess?.reset()}>Reset board</button>
-	<button on:click={()=>chess?.undo()}>Undo</button>
+	<button on:click={()=>chess?.pop()}>Undo</button>
 	<button on:click={()=>chess?.toggleOrientation()}>Flip board</button>
 </div>
 

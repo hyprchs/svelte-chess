@@ -100,7 +100,7 @@ Methods for manipulating game/board state:
 * `setBoard( board: chess.Board )`: Loads a position from a new `chess.Board` object.
 * `setFen( fen: string )`: Loads a position from a FEN. Throws an error if the FEN could not be parsed.
 * `reset()`: Loads the starting position.
-* `undo()`: Pops and returns the last `chess.Move` from the board's move stack.
+* `pop()`: Pops and returns the last `chess.Move` from the board's move stack.
 * `toggleOrientation()`: Flips the board.
 * `makeEngineMove()`: Make the best move according to the engine. See [Engine / Stockfish](#engine--stockfish) for loading the engine.
 
@@ -113,7 +113,7 @@ Example implementing undo/reset buttons ([REPL](https://svelte.dev/repl/7dd7b645
 </script>    
 <Chess bind:this={chess}/>
 <button on:click={()=>chess?.reset()}>Reset</button>
-<button on:click={()=>chess?.undo()}>Undo</button>
+<button on:click={()=>chess?.pop()}>Undo</button>
 ```
 
 ### Events

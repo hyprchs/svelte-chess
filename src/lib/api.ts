@@ -227,7 +227,7 @@ export class Api {
 	}
 
 	// Undo last move
-	undo(): chess.Move | null {
+	pop(): chess.Move | null {
 		const move = this.board.pop();
 		const turnColor = Api._colorToCgColor( this.board.turn );
 		this.cg.set({

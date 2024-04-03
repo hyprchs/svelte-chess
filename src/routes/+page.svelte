@@ -14,7 +14,7 @@
 		engine={new Engine({depth: 20, moveTime: 1500, color: WHITE})}
 	/>
 	<button on:click={()=>chess?.reset()}>Reset board</button>
-	<button on:click={()=>chess?.undo()}>Undo</button>
+	<button on:click={()=>chess?.pop()}>Undo</button>
 	<button on:click={()=>chess?.playEngineMove()}>Play engine move</button>
 </div>
 
