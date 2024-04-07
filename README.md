@@ -30,7 +30,7 @@ Basic playable chessboard ([REPL](https://svelte.dev/repl/b1a489538165489aa2720a
 
 ```svelte
 <script>
-  import { Chess } from 'svelte-chess'
+  import { Chess } from '@jacksonthall22/svelte-chess'
 </script>    
 <Chess />
 ```
@@ -56,7 +56,7 @@ Example using bindable props to monitor state ([REPL](https://svelte.dev/repl/d0
 
 ```svelte
 <script lang='ts'>
-  import { Chess } from 'svelte-chess'
+  import { Chess } from '@jacksonthall22/svelte-chess'
   import * as chess from '@jacksonthall22/chess.ts'
 
   let board = new chess.Board()
@@ -80,7 +80,7 @@ Starting from a specific FEN ([REPL](https://svelte.dev/repl/ebce18a71d774b2db98
 ```svelte
 <script lang='ts'>
   import { Board } from '@jacksonthall22/chess.ts'
-  import { Chess } from 'svelte-chess'
+  import { Chess } from '@jacksonthall22/svelte-chess'
 
   let board = new Board("rnbqkb1r/1p2pppp/p2p1n2/8/3NP3/2N5/PPP2PPP/R1BQKB1R w KQkq - 0 6")
 </script>
@@ -108,7 +108,7 @@ Example implementing undo/reset buttons ([REPL](https://svelte.dev/repl/7dd7b645
 
 ```svelte
 <script>
-  import { Chess } from 'svelte-chess'
+  import { Chess } from '@jacksonthall22/svelte-chess'
   let chess;
 </script>    
 <Chess bind:this={chess}/>
@@ -135,7 +135,7 @@ Example listening for `move` and `gameOver` events ([REPL](https://svelte.dev/re
 
 ```svelte
 <script>
-  import { Chess } from 'svelte-chess'
+  import { Chess } from '@jacksonthall22/svelte-chess'
   import { Board } from '@jacksonthall22/chess.ts'
   
   let board = new Board();
@@ -162,7 +162,7 @@ Example playing Black versus Stockfish ([live](https://gtim.github.io/svelte-che
 
 ```svelte
 <script>
-  import Chess, { Engine } from 'svelte-chess';
+  import Chess, { Engine } from '@jacksonthall22/svelte-chess';
   // Note: stockfish.js must be manually downloaded (see Readme)
 </script>
 <Chess engine={new Engine({depth: 20, moveTime: 1500, color: 'w'})} />
@@ -187,7 +187,7 @@ Example with custom stylesheet:
 
 ```svelte
 <script>
-  import { Chess } from 'svelte-chess'
+  import { Chess } from '@jacksonthall22/svelte-chess'
 </script>
 <link rel="stylesheet" href="/my-style.css" />
 <Chess class="my-class" />
