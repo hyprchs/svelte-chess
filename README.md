@@ -23,7 +23,7 @@ and optionally [Stockfish](https://github.com/official-stockfish/Stockfish) ches
 Installation:
 
 ```sh
-npm install svelte-chess
+npm install @jacksonthall22/svelte-chess
 ```
 
 Basic playable chessboard ([REPL](https://svelte.dev/repl/b1a489538165489aa2720a65b476a58b?version=3.59.1)):
