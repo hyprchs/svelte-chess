@@ -6,7 +6,7 @@
 </script>
 <script lang="ts">
   import { Board, WHITE, type Move, type Outcome, type PieceType, type Square, type Color } from '@jacksonthall22/chess.ts';
-	import { Chessground } from 'svelte-chessground';
+	import { Chessground } from '@jacksonthall22/svelte-chessground';
 	import PromotionDialog from '$lib/PromotionDialog.svelte';
   import { Api } from '$lib/api.js';
 	import type { Engine } from '$lib/engine.js';
