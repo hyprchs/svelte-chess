@@ -15,7 +15,7 @@
 
 	const dispatch = createEventDispatcher<{ move: Move, gameOver: Outcome, ready: {}, uci: string }>();
 
-	let chessground: Chessground;
+	export let chessground: Chessground = undefined!;
 	let container: HTMLElement;
 
 	/*
