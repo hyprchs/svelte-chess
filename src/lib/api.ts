@@ -1,4 +1,4 @@
-import type { Chessground } from 'svelte-chessground';
+import type { Chessground } from '@jacksonthall22/svelte-chessground';
 import chess from '@jacksonthall22/chess.ts'
 import type { Engine } from '$lib/engine.js';
 

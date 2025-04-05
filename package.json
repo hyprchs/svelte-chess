@@ -70,7 +70,7 @@
 	"type": "module",
 	"dependencies": {
 		"@jacksonthall22/chess.ts": "^0.1.12",
-		"@jacksonthall22/svelte-chessground": "^0.1.0",
+		"@jacksonthall22/svelte-chessground": "^0.2.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3"
 	}
 }

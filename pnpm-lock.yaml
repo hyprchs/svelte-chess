@@ -12,18 +12,18 @@ importers:
         specifier: ^0.1.12
         version: 0.1.12
       '@jacksonthall22/svelte-chessground':
-        specifier: ^0.1.0
-        version: 0.1.0(svelte@5.15.0)
+        specifier: ^0.2.0
+        version: 0.2.0(svelte@5.15.0)
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.3
         version: 5.0.3(svelte@5.15.0)(vite@6.0.5)
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.8
-        version: 3.0.8(@sveltejs/kit@2.14.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5))
+        version: 3.0.8(@sveltejs/kit@2.15.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5))
       '@sveltejs/kit':
         specifier: ^2.14.0
-        version: 2.14.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5)
+        version: 2.15.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5)
       '@sveltejs/package':
         specifier: ^2.3.7
         version: 2.3.7(svelte@5.15.0)(typescript@5.7.2)
@@ -457,10 +457,10 @@ packages:
   '@jacksonthall22/chess.ts@0.1.12':
     resolution: {integrity: sha512-gEeIOvo/Z82BplZ2O+PGxJYv67uJ3fqgiJlnfgnkq3uh0cJHDKnP9KqNQ0UbWN+/mGbrMKfii6rXPpU+wkXzIw==}
 
-  '@jacksonthall22/svelte-chessground@0.1.0':
-    resolution: {integrity: sha512-GMb4nih3FzrKEXSoG3mMKrKpTcSh2WhcpZeaT2FfH1MdPe2V41UtHqW8J6snVMyXD2nde0N49gOuI7+eXg7Wgw==}
+  '@jacksonthall22/svelte-chessground@0.2.0':
+    resolution: {integrity: sha512-BhU8mtRqnh/j0cBoQ7CI6QeG6TrxOOW3AkEANRZXHrPu5Gul8TqTEphJK5rRAPgyn6aTCh/b2yQQbOUo+fD6gg==}
     peerDependencies:
-      svelte: ^4.2.12
+      svelte: ^5.15.0
 
   '@jridgewell/gen-mapping@0.3.8':
     resolution: {integrity: sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==}
@@ -599,8 +599,8 @@ packages:
     peerDependencies:
       '@sveltejs/kit': ^2.0.0
 
-  '@sveltejs/kit@2.14.0':
-    resolution: {integrity: sha512-lqLmFb9WTegpj+83cTzvXL6S19UuSf8LEhF/8Mmjg53qqLVMmJt4RcrzOZTzK+o8lgpuXTPYPyKB+RUTNd9JjQ==}
+  '@sveltejs/kit@2.15.0':
+    resolution: {integrity: sha512-FI1bhfhFNGI2sKg+BhiRyM4eaOvX+KZqRYSQqL5PK3ZZREX2xufZ6MzZAw79N846OnIxYNqcz/3VOUq+FPDd3w==}
     engines: {node: '>=18.13'}
     hasBin: true
     peerDependencies:
@@ -2102,7 +2102,7 @@ snapshots:
 
   '@jacksonthall22/chess.ts@0.1.12': {}
 
-  '@jacksonthall22/svelte-chessground@0.1.0(svelte@5.15.0)':
+  '@jacksonthall22/svelte-chessground@0.2.0(svelte@5.15.0)':
     dependencies:
       chessground: 9.1.1
       svelte: 5.15.0
@@ -2198,11 +2198,11 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.29.1':
     optional: true
 
-  '@sveltejs/adapter-static@3.0.8(@sveltejs/kit@2.14.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5))':
+  '@sveltejs/adapter-static@3.0.8(@sveltejs/kit@2.15.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5))':
     dependencies:
-      '@sveltejs/kit': 2.14.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5)
+      '@sveltejs/kit': 2.15.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5)
 
-  '@sveltejs/kit@2.14.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5)':
+  '@sveltejs/kit@2.15.0(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.15.0)(vite@6.0.5))(svelte@5.15.0)(vite@6.0.5)':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 5.0.3(svelte@5.15.0)(vite@6.0.5)
       '@types/cookie': 0.6.0
